@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.mybatis.example.BlogMapper">
+	
+	<select id="login" parameterType="mybatis.VOCS" resultType="mybatis.VOCS">
+		select * from customer where id=#{id} and pw= #{pw}
+	</select>
+	
+	<insert id="join" parameterType="mybatis.VOCS">
+		insert into customer values(customer_seq.nextval, #{id}, #{email}, #{pw}, #{name}, #{phone}, #{addr}, #{code}, sysdate)
+	</insert>
+	
+	<!-- 제품 불러오기 -->
+	<select id="pd_list" resultType="mybatis.VOPD">
+		select * from product order by pd_idx
+	</select>
+
+	<!--카테고리별 상품리스트-->
+	<select id="pd_list_ctg" resultType="mybatis.VOPD" parameterType="String">
+		select * from product where category=#{category} order by p_date
+	</select>
+	
+	<!--  꼼수 : 서브카테고리 안만들어서 p_num에다가 만들서브 카테고리 만들었음... ㅠ-->
+	<select id="pd_num_list_ctg" resultType="mybatis.VOPD" parameterType="String">
+		select * from product where p_num like '%'||#{p_num}||'%' 
+	</select>
+	
+	<!-- 상품등록 -->
+	<insert id="pd_insert" parameterType="mybatis.VOPD">
+		insert into product values(product_seq.nextval,#{category},#{p_num},#{p_name},#{p_company},#{p_image_s},#{p_price},#{p_saleprice},#{p_stock},0,sysdate,#{p_content})
+	</insert>
+	
+	
+	<select id="pd_onelist" resultType="mybatis.VOPD" parameterType="Map">
+		select * from product where p_num=#{p_num} and p_name=#{p_name}	
+	</select>
+	
+	<select id="cartlist" parameterType="String" resultType="mybatis.Cart">
+		select * from Copcart where id=#{id}
+	</select>
+	
+	<!--고객 장바구니에 새로운 상품 추가-->
+	<insert id="cartinsert" parameterType="mybatis.Cart">
+		insert into Copcart values(Copcart_seq.nextval,#{id},#{p_num},#{p_name},#{p_price},#{p_su},#{p_image_s},#{p_saleprice})
+	</insert>
+	
+	<!--고객 장바구니에 해당 상품 있는지 확인-->
+	<select id="chkcart" parameterType="Map" resultType="mybatis.Cart">
+		select * from Copcart where id=#{id} and p_num=#{p_num}
+	</select>
+
+	<update id="cartup" parameterType="mybatis.Cart">
+		update Copcart set p_su = p_su + #{p_su} where id=#{id} and p_num=#{p_num}
+	</update>
+	
+	<!--관리자 상품목록 삭제-->
+	<delete id="AdmPdList" parameterType="String">
+		delete from product where p_num=#{p_num}
+	</delete>
+	
+	<!-- 장바구니 상품 삭제 -->
+	<delete id="Cartlistdel" parameterType="Map">
+		delete from copcart where p_num=#{p_num} and id=#{id}
+	</delete>
+	
+	<!--고객 게시판에 글쓰기-->	
+	<insert id="insert_qna" parameterType="mybatis.CST_QNA">
+		insert into CST_QNA values(cst_qna_seq.nextval,#{qna_ctg},#{id},#{pwd},#{title},#{content},#{filename},0,sysdate)
+	</insert>
+	
+	<!--qna 글 목록 보여주기-->
+	<select id="qnalist" parameterType="Map" resultType="mybatis.CST_QNA">
+		select * from 
+		(select rownum r_num, a.* from 
+		(select * from cst_qna order by regdate desc) a)
+		where r_num between #{begin} and #{end} 
+	</select>
+	
+	<!-- cst_qna 총 게시글 구하기 -->
+	<select id="qna_totalRecord" resultType="int">
+		select count(*) from cst_qna	
+	</select>
+	
+	<!-- 마이코팡 고객 각각의 총 구매이력 구하기 -->
+	<select id="corder_totalRecord" resultType="int" parameterType="String">
+		select count(*) from corder where id=#{id}	
+	</select>
+	
+	<select id="qna_onelist" parameterType="String" resultType="mybatis.CST_QNA">
+		select * from cst_qna where qna_idx=#{qna_idx}
+	</select>
+	
+	<!--게시글 수정-->
+	<update id="QNAonelist_update" parameterType="mybatis.CST_QNA">
+ 		update cst_qna set pwd=#{pwd}, title=#{title}, content=#{content} where qna_idx=#{qna_idx}
+	</update>
+	
+	<delete id="qna_del" parameterType="String">
+		delete from cst_qna where qna_idx=#{qna_idx}	
+	</delete>
+	
+	<select id="onelist_two" parameterType="Map" resultType="mybatis.VOPD">
+		select * from product where category=#{category} and p_num=#{p_num}
+	</select>
+	
+	<update id="adminUpdate">
+		update product set category=#{category},p_num=#{p_num},p_name=#{p_name},
+		p_company=#{p_company},p_content=#{p_content},p_price=#{p_price},
+		p_saleprice=#{p_saleprice},p_stock=#{p_stock} where pd_idx=#{pd_idx}
+	</update>
+	
+	<select id="infoCustomer" parameterType="String" resultType="mybatis.VOCS">
+		select * from customer where id=#{id}
+	</select>
+	
+	<insert id="purchse" parameterType="mybatis.Corder">
+		insert into corder values(corder_seq.nextval,#{id},#{act_name},
+		#{addr},#{code},#{req_msg},sysdate, #{act_phone},
+		#{payment},#{p_name},#{total_price},#{p_num},#{mileage},#{buy_method})
+	</insert>
+	
+	<select id="orderlist" resultType="mybatis.Corder" parameterType="Map">
+		select * from corder where id=#{id} and ordernum=#{ordernum}
+	</select>
+	
+	<select id="mycopang_corderlist" resultType="mybatis.Corder" parameterType="Map">
+		select * from 
+		(select rownum r_num, a.* from 
+		(select * from corder where id=#{id} order by order_date desc) a)
+		where r_num between #{begin} and #{end} 
+	</select>
+	
+	<select id="eachCsInfo" parameterType="String" resultType="mybatis.VOCS">
+		select * from customer where id = #{id}
+	</select>
+	
+	<update id="csUpdate" parameterType="mybatis.VOCS">
+		update customer 
+		set email = #{email}, name=#{name}, phone=#{phone}, addr=#{addr}, code=#{code} where id=#{id}
+	</update>
+	
+	<!--회원 탈퇴하기(주체가 회원)  -->
+	<delete id="cs_secession" parameterType="String">
+		delete from customer where id = #{id}
+	</delete>
+
+	<!--관리자가 회원 삭제시키기(주체가 관리자)  -->
+	<delete id="admin_cs_secession" parameterType="String">
+		delete from customer where cs_idx = #{cs_idx}
+	</delete>
+	
+	<!--아이디 체크-->
+	<select id="idcheck" resultType="mybatis.VOCS" parameterType="String">
+		select * from customer where id=#{id}
+	</select>
+	
+	<!--고객 목록-->
+	<select id="cstlist" resultType="mybatis.VOCS">
+		select * from customer order by regdate desc
+	</select>
+	
+	<!-- 검색기능 -->
+	<select id="srchPD" parameterType="String" resultType="mybatis.VOPD">
+		select * from product 
+		where category like '%'||#{keyword}||'%' 
+		or p_name like '%'||#{keyword}||'%' 
+		or p_company like '%'||#{keyword}||'%' 
+		or p_image_s like '%'||#{keyword}||'%' 
+		or p_content like '%'||#{keyword}||'%' 
+		order by pd_idx
+	</select>
+	
+	<insert id="cmt_insert" parameterType="mybatis.CST_qna_cmt">
+		insert into cst_cmt values(cst_cmt_seq.nextval,#{cmt_id},#{cmt_pw},#{cmt_content},sysdate,#{qna_idx})
+	</insert>
+	
+	<select id="cmt_list" parameterType="String" resultType="mybatis.CST_qna_cmt">
+		select * from cst_cmt where qna_idx = #{qna_idx}
+	</select>
+	
+	<delete id="cmt_del" parameterType="String">
+		delete from cst_cmt where cmt_idx=#{cmt_idx}
+	</delete>
+	
+	<update id="cmt_mdf" parameterType="Map">
+		update cst_cmt set cmt_content=#{cmt_content} where cmt_idx=#{cmt_idx} 
+	</update>
+	
+	<update id="hit_up" parameterType="mybatis.VOPD">
+		update product set p_hit = #{p_hit}+1 where category=#{category} and p_num=#{p_num}
+	</update>
+	
+	<!--상품 구매 후 재고에서 수량만큼  감소시키기-->	
+	<update id="stock_update" parameterType="mybatis.VOPD">
+		update product set p_stock=#{p_stock} where p_num=#{p_num}
+	</update>
+	
+	<!-- p_num에 해당하는 객체 반환 -->
+	<select id="StockOfPd" parameterType="String" resultType="mybatis.VOPD">
+		select * from product where p_num = #{p_num}
+	</select>
+	
+	<!-- 게시글 조회수 업뎃 -->
+	<update id="oneQna_hitup" parameterType="mybatis.CST_QNA">
+		update cst_qna set qna_hit=#{qna_hit}+1 where qna_idx=#{qna_idx}
+	</update>
+	
+	<!-- 아이디 찾기 -->
+	<select id="find_id_through_email" parameterType="Map" resultType="mybatis.VOCS">
+		select * from customer where name=#{name} and email = #{email}		
+	</select>
+	
+	<!-- 비번 찾기 -->
+	<select id="find_password_by_id" parameterType="Map" resultType="mybatis.VOCS">
+		select * from customer where name=#{name} and id=#{id}		
+	</select>
+
+
+	
+	
+</mapper>
+
+
+
+
+
